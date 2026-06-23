@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "leo-store",
+  "name": "leo-store-cloud",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-06-23",
   "compatibility_flags": [
@@ -14,7 +14,7 @@
   "services": [
     {
       "binding": "WORKER_SELF_REFERENCE",
-      "service": "leo-store"
+      "service": "leo-store-cloud"
     }
   ],
   "r2_buckets": [
