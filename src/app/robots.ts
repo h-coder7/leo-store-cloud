@@ -1,14 +1,13 @@
-import { MetadataRoute } from 'next'
+import { MetadataRoute } from 'next';
+import { absoluteUrl } from '@/lib/site';
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com'
-
-  return {
-    rules: {
-      userAgent: '*',
-      allow: '/',
-      disallow: ['/admin/', '/checkout/'], // Prevent crawling private/checkout pages
-    },
-    sitemap: `${baseUrl}/sitemap.xml`,
-  }
+    return {
+        rules: {
+            userAgent: '*',
+            allow: '/',
+            disallow: ['/admin/', '/checkout/', '/cart/', '/login'],
+        },
+        sitemap: absoluteUrl('/sitemap.xml'),
+    };
 }

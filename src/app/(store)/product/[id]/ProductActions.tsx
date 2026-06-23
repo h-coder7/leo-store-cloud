@@ -6,8 +6,8 @@ import { ShoppingCart, Loader2, Ruler, X, Truck, ShieldCheck, CreditCard } from 
 import Image from 'next/image';
 import type { Product } from "@/lib/supabase/types";
 import { addToCart } from "@/app/actions/cart";
+import { refreshCartFromServer } from "@/lib/cart/refresh";
 import { toast } from "sonner";
-import { useCartStore } from "@/lib/store/cart";
 import { formatWhatsAppNumber } from "@/lib/utils";
 import { isSizeAvailableForColor } from "@/lib/product/variants";
 
@@ -33,9 +33,6 @@ export default function ProductActions({
     const [isBuyNowPending, setIsBuyNowPending] = useState(false);
     const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
 
-    // This updates local UI immediately (Navbar count)
-    const addLocalItem = useCartStore(state => state.addItem);
-
     const handleAddToCart = async () => {
         if (product.sizes?.length && !selectedSize) {
             toast.error("يرجى اختيار المقاس");
@@ -49,21 +46,8 @@ export default function ProductActions({
 
         try {
             setIsPending(true);
-
-            // Add to local Zustand for immediate UI update
-            addLocalItem({
-                product_id: product.id,
-                name: product.name,
-                price: product.price,
-                quantity: 1,
-                size: selectedSize,
-                color: selectedColor,
-                image: product.images?.[0] || ""
-            });
-
-            // Persist to Supabase
             await addToCart(product.id, 1, selectedSize, selectedColor);
-
+            await refreshCartFromServer();
             toast.success("تم إضافة المنتج للسلة بنجاح!");
         } catch (error) {
             console.error(error);
@@ -86,22 +70,8 @@ export default function ProductActions({
 
         try {
             setIsBuyNowPending(true);
-
-            // Add to local Zustand for immediate UI update
-            addLocalItem({
-                product_id: product.id,
-                name: product.name,
-                price: product.price,
-                quantity: 1,
-                size: selectedSize,
-                color: selectedColor,
-                image: product.images?.[0] || ""
-            });
-
-            // Persist to Supabase
             await addToCart(product.id, 1, selectedSize, selectedColor);
-
-            // Go to checkout
+            await refreshCartFromServer();
             router.push("/checkout");
         } catch (error) {
             console.error(error);

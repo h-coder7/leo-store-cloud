@@ -108,7 +108,7 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
                 {/* Copyright */}
                 <div className="pt-8 border-t border-slate-200 dark:border-slate-800 text-center flex flex-col md:flex-row justify-between items-center gap-4">
                     <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">
-                        جميع الحقوق محفوظة &copy; {new Date().getFullYear()} ليو ستور.
+                        جميع الحقوق محفوظة &copy; {new Date().getFullYear()} ليو كيدز.
                     </p>
                     <div className="flex gap-4 text-sm text-slate-500 dark:text-slate-400">
                         <Link href="/privacy" className="hover:text-primary transition-colors">سياسة الخصوصية</Link>

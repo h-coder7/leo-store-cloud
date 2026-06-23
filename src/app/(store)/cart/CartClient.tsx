@@ -1,72 +1,80 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { removeFromCart, updateCartItemQuantity } from "@/app/actions/cart";
+import { refreshCartFromServer } from "@/lib/cart/refresh";
+import { toCartStoreItems, type ServerCartItem } from "@/lib/cart/sync";
+import { useCartStore } from "@/lib/store/cart";
 import { toast } from "sonner";
 import Image from 'next/image';
 import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
-import { useCartStore } from "@/lib/store/cart";
 
-type CartClientItem = {
-    id: number;
-    quantity: number;
-    size: string;
-    color: string;
-    product: {
-        id: number;
-        name: string;
-        price: number;
-        images: string[] | null;
-    };
+type CartClientItem = ServerCartItem & {
+    product: NonNullable<ServerCartItem['product']>;
 };
+
+function toClientItems(items: ServerCartItem[]): CartClientItem[] {
+    return items.filter((item): item is CartClientItem => item.product != null);
+}
 
 export default function CartClient({ initialItems }: { initialItems: CartClientItem[] }) {
     const [items, setItems] = useState<CartClientItem[]>(initialItems);
     const [isPending, startTransition] = useTransition();
+    const replaceItems = useCartStore((state) => state.replaceItems);
 
-    const removeLocalItem = useCartStore((state) => state.removeItem);
-    const updateLocalQuantity = useCartStore((state) => state.updateQuantity);
+    useEffect(() => {
+        setItems(initialItems);
+        replaceItems(toCartStoreItems(initialItems));
+    }, [initialItems, replaceItems]);
+
+    const applyServerCart = async () => {
+        const fresh = toClientItems(await refreshCartFromServer());
+        setItems(fresh);
+        return fresh;
+    };
 
     const handleUpdateQuantity = async (id: number, newQuantity: number) => {
         if (newQuantity < 1) return;
 
-        const itemToUpdate = items.find(i => i.id === id);
+        const itemToUpdate = items.find((i) => i.id === id);
         if (!itemToUpdate) return;
 
-        // Optimistic update
+        const previousItems = items;
         setItems((current) =>
             current.map((item) =>
                 item.id === id ? { ...item, quantity: newQuantity } : item
             )
         );
 
-        updateLocalQuantity(itemToUpdate.product.id, itemToUpdate.size, itemToUpdate.color, newQuantity);
-
         startTransition(async () => {
             try {
                 await updateCartItemQuantity(id, newQuantity);
-            } catch (error) {
+                await applyServerCart();
+            } catch {
                 toast.error("فشل في تحديث الكمية");
+                setItems(previousItems);
+                await applyServerCart();
             }
         });
     };
 
     const handleRemove = async (id: number) => {
-        const itemToRemove = items.find(i => i.id === id);
+        const itemToRemove = items.find((i) => i.id === id);
         if (!itemToRemove) return;
 
-        // Optimistic update
+        const previousItems = items;
         setItems((current) => current.filter((item) => item.id !== id));
-
-        removeLocalItem(itemToRemove.product.id, itemToRemove.size, itemToRemove.color);
 
         startTransition(async () => {
             try {
                 await removeFromCart(id);
+                await applyServerCart();
                 toast.success("تم إزالة المنتج من السلة");
-            } catch (error) {
+            } catch {
                 toast.error("فشل في إزالة المنتج");
+                setItems(previousItems);
+                await applyServerCart();
             }
         });
     };
@@ -91,11 +99,9 @@ export default function CartClient({ initialItems }: { initialItems: CartClientI
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Items list */}
             <div className="lg:col-span-2 flex flex-col gap-4">
                 {items.map((item) => (
                     <div key={item.id} className="flex gap-4 p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-                        {/* Image */}
                         <div className="relative w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700">
                             {item.product.images?.[0] ? (
                                 <Image src={item.product.images[0]} alt={item.product.name} fill quality={50} sizes="96px" className="object-cover" />
@@ -106,7 +112,6 @@ export default function CartClient({ initialItems }: { initialItems: CartClientI
                             )}
                         </div>
 
-                        {/* Details */}
                         <div className="flex flex-col flex-1 gap-2">
                             <div className="flex justify-between items-start">
                                 <Link href={`/product/${item.product.id}`} className="font-bold text-lg text-slate-800 dark:text-white hover:text-primary transition-colors">
@@ -122,19 +127,19 @@ export default function CartClient({ initialItems }: { initialItems: CartClientI
                                 {item.color && <span className="bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-xs">اللون: {item.color}</span>}
                             </div>
 
-                            {/* Actions */}
                             <div className="flex justify-between items-center mt-auto">
                                 <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-900 rounded-xl p-1 border border-slate-200 dark:border-slate-700">
                                     <button
                                         onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                                        className="p-1.5 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-300"
+                                        disabled={isPending}
+                                        className="p-1.5 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-300 disabled:opacity-50"
                                     >
                                         <Plus className="w-4 h-4" />
                                     </button>
                                     <span className="font-bold w-6 text-center text-slate-800 dark:text-white">{item.quantity}</span>
                                     <button
                                         onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                                        disabled={item.quantity <= 1}
+                                        disabled={item.quantity <= 1 || isPending}
                                         className="p-1.5 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-300 disabled:opacity-50 cursor-pointer"
                                     >
                                         <Minus className="w-4 h-4" />
@@ -143,7 +148,8 @@ export default function CartClient({ initialItems }: { initialItems: CartClientI
 
                                 <button
                                     onClick={() => handleRemove(item.id)}
-                                    className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors cursor-pointer"
+                                    disabled={isPending}
+                                    className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors cursor-pointer disabled:opacity-50"
                                     title="إزالة المنتج"
                                 >
                                     <Trash2 className="w-5 h-5" />
@@ -154,7 +160,6 @@ export default function CartClient({ initialItems }: { initialItems: CartClientI
                 ))}
             </div>
 
-            {/* Summary */}
             <div className="flex flex-col gap-6 p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 h-fit sticky top-24">
                 <h3 className="font-black text-xl text-slate-800 dark:text-white">ملخص الطلب</h3>
                 <div className="flex flex-col gap-3 text-slate-600 dark:text-slate-300 font-semibold">
@@ -162,10 +167,6 @@ export default function CartClient({ initialItems }: { initialItems: CartClientI
                         <span>المجموع الفرعي ({items.length} منتجات)</span>
                         <span>{subtotal.toLocaleString("ar-EG")} ج.م</span>
                     </div>
-                    {/* <div className="flex justify-between">
-                        <span>التوصيل</span>
-                        <span className="text-emerald-500">يتم حسابه لاحقاً</span>
-                    </div> */}
                 </div>
 
                 <hr className="border-slate-200 dark:border-slate-700" />

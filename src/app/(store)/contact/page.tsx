@@ -1,10 +1,23 @@
+import type { Metadata } from 'next';
 import React from 'react';
 import { getSettings } from '@/app/actions/settings';
-import { Phone, MessageSquare, MapPin, Send, Mail } from 'lucide-react';
-import Link from 'next/link';
+import { Phone, MessageSquare, MapPin, Send } from 'lucide-react';
 import { formatWhatsAppNumber } from '@/lib/utils';
+import { absoluteUrl, pageTitle } from '@/lib/site';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
+
+export const metadata: Metadata = {
+    title: 'اتصل بنا',
+    description: 'تواصل مع فريق ليو كيدز — هاتف، واتساب، فيسبوك وانستجرام. نرد على استفساراتكم بسرعة.',
+    alternates: {
+        canonical: absoluteUrl('/contact'),
+    },
+    openGraph: {
+        title: pageTitle('اتصل بنا'),
+        url: absoluteUrl('/contact'),
+    },
+};
 
 const FacebookIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

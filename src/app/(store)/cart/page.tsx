@@ -1,14 +1,17 @@
+import type { Metadata } from 'next';
 import React from "react";
 import { getCartItems } from "@/app/actions/cart";
 import CartClient from "./CartClient";
 import Link from "next/link";
 
-export const metadata = {
-    title: "السلة | ليو ستور",
+export const metadata: Metadata = {
+    title: 'سلة المشتريات',
+    description: 'راجع مشترياتك وأكمل طلبك من ليو كيدز.',
+    robots: { index: false, follow: false },
 };
 
 export default async function CartPage() {
-    const items = await getCartItems();
+    const items = (await getCartItems()).filter((item) => item.product != null);
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-900" dir="rtl">

@@ -12,14 +12,8 @@ export default function Navbar() {
     const [mounted, setMounted] = useState(false);
     const cartCount = useCartStore((state) => state.count());
 
-    // The cart is persisted in localStorage (zustand persist) and kept in sync
-    // on add/remove, so we read the badge count from there instead of hitting
-    // Supabase on every page load. We only flip `mounted` to avoid SSR/CSR
-    // hydration mismatch on the badge.
+    // Badge reads from Zustand, synced from Supabase on each page via CartSync.
     useEffect(() => {
-        // Post-mount flag to avoid SSR/CSR hydration mismatch on the cart badge
-        // (the count comes from localStorage, which isn't available on the server).
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
     }, []);
 
@@ -37,7 +31,7 @@ export default function Navbar() {
                     {/* Logo Section (Right side for RTL) */}
                     <div className="flex-shrink-0 flex items-center">
                         <Link href="/" className="flex items-center gap-2">
-                            <Image src="/logo.png" alt="Leo Store" width={100} height={80} priority style={{ color: 'transparent', width: 'auto', height: '80px', padding: '10px 0' }} />
+                            <Image src="/logo.png" alt="Leo Kids" width={100} height={80} priority style={{ color: 'transparent', width: 'auto', height: '80px', padding: '10px 0' }} />
                         </Link>
                     </div>
 

@@ -106,6 +106,7 @@ export async function updateCartItemQuantity(id: number, quantity: number) {
 
     if (error) throw new Error(error.message);
     revalidatePath("/cart");
+    revalidatePath("/");
     return { success: true };
 }
 
@@ -118,26 +119,6 @@ export async function removeFromCart(id: number) {
 
     if (error) throw new Error(error.message);
     revalidatePath("/cart");
+    revalidatePath("/");
     return { success: true };
-}
-
-export async function getCartCount() {
-    try {
-        const supabase = await createClient();
-        const cookieStore = await cookies();
-        const sessionId = cookieStore.get("cart_session")?.value;
-
-        if (!sessionId) return 0;
-
-        const { data, error } = await supabase
-            .from("cart_items")
-            .select("quantity")
-            .eq("session_id", sessionId);
-
-        if (error) return 0;
-
-        return data.reduce((acc, item) => acc + item.quantity, 0);
-    } catch {
-        return 0;
-    }
 }

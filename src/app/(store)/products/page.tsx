@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import React from 'react';
 import { getProducts, getSections } from '@/app/actions/products';
 import ProductCard from '@/components/store/ProductCard';
@@ -5,8 +6,22 @@ import OffersSlider from '@/components/store/OffersSlider';
 import { getOffers } from '@/app/actions/offers';
 import Link from 'next/link';
 import { ShoppingBag } from 'lucide-react';
+import { absoluteUrl, pageTitle } from '@/lib/site';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
+
+export const metadata: Metadata = {
+    title: 'جميع المنتجات',
+    description: 'تصفّح كل منتجات ليو كيدز — ملابس أطفال بنات وأولاد ومواليد بأفضل الأسعار.',
+    alternates: {
+        canonical: absoluteUrl('/products'),
+    },
+    openGraph: {
+        title: pageTitle('جميع المنتجات'),
+        description: 'تصفّح كل منتجات ليو كيدز — ملابس أطفال بجودة عالية.',
+        url: absoluteUrl('/products'),
+    },
+};
 
 interface Props {
     searchParams: Promise<{ section?: string }>;

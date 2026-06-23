@@ -5,6 +5,12 @@ import { redirect } from 'next/navigation';
 import { getSettings } from '@/app/actions/settings';
 import { createClient } from '@/lib/supabase/server';
 import type { OfferInfo } from './CheckoutClient';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'إتمام الطلب',
+    robots: { index: false, follow: false },
+};
 
 interface Props {
     searchParams: Promise<{ 

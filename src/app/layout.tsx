@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Zain } from "next/font/google";
+import { SITE_NAME, SITE_NAME_AR, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const zain = Zain({
@@ -10,7 +11,7 @@ const zain = Zain({
 
 export const metadata: Metadata = {
 
-    metadataBase: new URL("https://www.leo-kids.com"),
+    metadataBase: new URL(SITE_URL),
 
     title: {
         default: "Leo Kids | ملابس أطفال أونلاين — متجر ليو كيدز",
@@ -38,15 +39,15 @@ export const metadata: Metadata = {
         "توصيل ملابس اطفال مصر",
     ],
 
-    authors: [{ name: "Leo Kids", url: "https://www.leo-kids.com" }],
-    creator: "Leo Kids",
-    publisher: "Leo Kids",
+    authors: [{ name: SITE_NAME, url: SITE_URL }],
+    creator: SITE_NAME,
+    publisher: SITE_NAME,
 
     openGraph: {
         type: "website",
         locale: "ar_EG",
         alternateLocale: "en_US",
-        url: "https://www.leo-kids.com",
+        url: SITE_URL,
         siteName: "Leo Kids | ليو كيدز",
         title: "Leo Kids | ألبس طفلك أحلى كولكشن — توصيل لحد بيتك ",
         description:
@@ -58,16 +59,16 @@ export const metadata: Metadata = {
         title: "Leo Kids | ملابس أطفال بجودة عالية وأسعار تبهجك",
         description:
             "بنات وأولاد ومواليد — كولكشنات جديدة كل أسبوع. اطلب على leo-kids.com وهنوصلك لحد بيتك في أي محافظة!",
-        images: ["https://www.leo-kids.com/og-image.jpg"],
+        images: [`${SITE_URL}/og-image.jpg`],
         creator: "@LeoKidsEG",
         site: "@LeoKidsEG",
     },
 
     alternates: {
-        canonical: "https://www.leo-kids.com",
+        canonical: SITE_URL,
         languages: {
-            "ar-EG": "https://www.leo-kids.com",
-            "en-US": "https://www.leo-kids.com",
+            "ar-EG": SITE_URL,
+            "en-US": SITE_URL,
         },
     },
 

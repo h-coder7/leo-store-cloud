@@ -1,5 +1,7 @@
+import type { Metadata } from 'next';
 import React from 'react';
 import BannerSlider from '@/components/store/BannerSlider';
+import { absoluteUrl } from '@/lib/site';
 import SectionCard from '@/components/store/SectionCard';
 import ProductCard from '@/components/store/ProductCard';
 import TestimonialsSlider from '@/components/store/TestimonialsSlider';
@@ -9,6 +11,14 @@ import { getBanners } from '@/app/actions/banners';
 import { getTestimonials } from '@/app/actions/testimonials';
 import { getOffers } from '@/app/actions/offers';
 import { Palette, Folder, ShoppingBag } from 'lucide-react';
+
+export const revalidate = 300;
+
+export const metadata = {
+    alternates: {
+        canonical: absoluteUrl('/'),
+    },
+};
 
 export default async function StorePage() {
     const [products, sections, banners, testimonials, offers] = await Promise.all([
