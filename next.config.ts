@@ -1,4 +1,8 @@
 import type { NextConfig } from "next";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 
 function imageRemotePatterns() {
   const patterns: NonNullable<NextConfig['images']>['remotePatterns'] = [
@@ -45,6 +49,14 @@ function imageRemotePatterns() {
 }
 
 const nextConfig: NextConfig = {
+  // Turbopack resolves CSS @imports from the parent folder on Windows when the
+  // project lives under D:\stores\*. Pin packages to this project's node_modules.
+  turbopack: {
+    resolveAlias: {
+      tailwindcss: path.join(projectRoot, "node_modules/tailwindcss"),
+      "tw-animate-css": path.join(projectRoot, "node_modules/tw-animate-css"),
+    },
+  },
   experimental: {
     serverActions: {
       // Images are compressed to WebP in the browser before upload, so each is

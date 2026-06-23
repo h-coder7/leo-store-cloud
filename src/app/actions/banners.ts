@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/server';
 import { getSupabaseStatic, isSupabaseConfigured } from '@/lib/supabase/static';
 import { uploadFormImage } from '@/lib/storage/upload';
 import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache';
-import { redirect } from 'next/navigation';
 
 const getCachedBanners = unstable_cache(
     async () => {
@@ -86,7 +85,7 @@ export async function addBanner(formData: FormData) {
     revalidateTag('banners', 'max');
     revalidatePath('/');
     revalidatePath('/admin/banners');
-    redirect('/admin/banners');
+    return { success: true };
 }
 
 export async function toggleBannerStatus(id: number, currentStatus: boolean) {

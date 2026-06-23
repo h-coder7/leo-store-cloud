@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { addBanner } from '@/app/actions/banners';
 import { ArrowLeft, Save, Image as ImageIcon, AlertCircle } from 'lucide-react';
@@ -10,6 +10,8 @@ import { compressImage } from '@/lib/image/compress';
 export default function AddBannerPage() {
     const [fileError, setFileError] = useState<string | null>(null);
     const [fileName, setFileName] = useState<string | null>(null);
+    const [isPending, setIsPending] = useState(false);
+    const isSubmitting = useRef(false);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -22,6 +24,8 @@ export default function AddBannerPage() {
     };
 
     const handleSubmit = async (formData: FormData) => {
+        if (isSubmitting.current) return;
+
         const file = formData.get('image');
         // Banner is a wide hero image → allow a larger width.
         if (file instanceof File && file.size > 0) {
@@ -29,10 +33,22 @@ export default function AddBannerPage() {
             formData.set('image', compressed);
         }
 
+        isSubmitting.current = true;
+        setIsPending(true);
         try {
-            await addBanner(formData);
-        } catch {
-            toast.error("حدث خطأ أثناء إضافة البنر");
+            const result = await addBanner(formData);
+            if (result?.success) {
+                toast.success("تم إضافة البنر بنجاح");
+                window.location.href = '/admin/banners';
+            } else {
+                throw new Error("فشل إضافة البنر");
+            }
+        } catch (error) {
+            console.error("Add banner error:", error);
+            const message = error instanceof Error ? error.message : "";
+            toast.error(message ? `حدث خطأ أثناء إضافة البنر: ${message}` : "حدث خطأ أثناء إضافة البنر");
+            setIsPending(false);
+            isSubmitting.current = false;
         }
     };
 
@@ -91,11 +107,20 @@ export default function AddBannerPage() {
                 <div className="flex justify-end pt-2">
                     <button
                         type="submit"
-                        disabled={!!fileError}
-                        className={`px-8 py-3 rounded-xl font-black transition-all shadow-md flex items-center gap-2 active:scale-95 ${fileError ? 'bg-slate-300 cursor-not-allowed text-slate-500' : 'bg-primary hover:opacity-90 text-primary-foreground shadow-primary/20'}`}
+                        disabled={!!fileError || isPending}
+                        className={`px-8 py-3 rounded-xl font-black transition-all shadow-md flex items-center gap-2 active:scale-95 ${fileError || isPending ? 'bg-slate-300 cursor-not-allowed text-slate-500' : 'bg-primary hover:opacity-90 text-primary-foreground shadow-primary/20'}`}
                     >
-                        <Save className="w-5 h-5" />
-                        حفظ ونشر البنر
+                        {isPending ? (
+                            <>
+                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                جاري الحفظ...
+                            </>
+                        ) : (
+                            <>
+                                <Save className="w-5 h-5" />
+                                حفظ ونشر البنر
+                            </>
+                        )}
                     </button>
                 </div>
             </form>
