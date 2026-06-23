@@ -1,14 +1,16 @@
 "use server";
 
 import { createClient } from '@/lib/supabase/server';
-import { supabaseStatic } from '@/lib/supabase/static';
+import { getSupabaseStatic, isSupabaseConfigured } from '@/lib/supabase/static';
 import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { Testimonial } from '@/lib/supabase/types';
 
 const getCachedTestimonials = unstable_cache(
     async (): Promise<Testimonial[]> => {
-        const { data, error } = await supabaseStatic
+        if (!isSupabaseConfigured()) return [];
+
+        const { data, error } = await getSupabaseStatic()
             .from('testimonials')
             .select('id, name, role, content, rating, created_at')
             .order('created_at', { ascending: false });

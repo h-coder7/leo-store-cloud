@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from '@/lib/supabase/server';
-import { supabaseStatic } from '@/lib/supabase/static';
+import { getSupabaseStatic, isSupabaseConfigured } from '@/lib/supabase/static';
 import { uploadFormImage } from '@/lib/storage/upload';
 import { revalidatePath, unstable_cache, revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
@@ -9,7 +9,9 @@ import type { Product, Section } from '@/lib/supabase/types';
 
 const getCachedProducts = unstable_cache(
     async (sectionId?: number, limit: number = 20) => {
-        let query = supabaseStatic
+        if (!isSupabaseConfigured()) return [];
+
+        let query = getSupabaseStatic()
             .from('products')
             .select('id, name, price, images, sizes, colors, season, section_id, created_at')
             .order('created_at', { ascending: false });
@@ -58,7 +60,9 @@ export async function getProduct(id: number): Promise<Product | null> {
 
 const getCachedSections = unstable_cache(
     async () => {
-        const { data, error } = await supabaseStatic
+        if (!isSupabaseConfigured()) return [];
+
+        const { data, error } = await getSupabaseStatic()
             .from('sections')
             .select('id, name, image_url, parent, created_at')
             .order('name', { ascending: true });

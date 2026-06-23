@@ -1,14 +1,16 @@
 "use server";
 
 import { createClient } from '@/lib/supabase/server';
-import { supabaseStatic } from '@/lib/supabase/static';
+import { getSupabaseStatic, isSupabaseConfigured } from '@/lib/supabase/static';
 import { uploadFormImage } from '@/lib/storage/upload';
 import { revalidatePath, unstable_cache, revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 const getCachedOffers = unstable_cache(
     async () => {
-        const { data, error } = await supabaseStatic
+        if (!isSupabaseConfigured()) return [];
+
+        const { data, error } = await getSupabaseStatic()
             .from('offers')
             .select('id, title, description, discount_label, image_url, type, min_quantity, discount_value, is_free_shipping, is_active, created_at')
             .eq('is_active', true)

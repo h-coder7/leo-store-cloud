@@ -1,6 +1,8 @@
 import Sidebar from "@/components/admin/Sidebar";
 import Topbar from "@/components/admin/Topbar";
 
+export const dynamic = 'force-dynamic';
+
 export default function AdminLayout({
     children,
 }: {

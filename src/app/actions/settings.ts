@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { supabaseStatic } from "@/lib/supabase/static";
+import { getSupabaseStatic, isSupabaseConfigured } from "@/lib/supabase/static";
 import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 
 export type SiteSettings = {
@@ -28,7 +28,9 @@ const DEFAULT_SETTINGS: SiteSettings = {
 
 const getCachedSettings = unstable_cache(
     async (): Promise<SiteSettings> => {
-        const { data, error } = await supabaseStatic
+        if (!isSupabaseConfigured()) return DEFAULT_SETTINGS;
+
+        const { data, error } = await getSupabaseStatic()
             .from('site_settings')
             .select('phone, whatsapp, address, facebook_url, instagram_url, telegram_url, vodafone_cash, instapay_number')
             .single();

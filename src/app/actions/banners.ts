@@ -1,14 +1,16 @@
 "use server";
 
 import { createClient } from '@/lib/supabase/server';
-import { supabaseStatic } from '@/lib/supabase/static';
+import { getSupabaseStatic, isSupabaseConfigured } from '@/lib/supabase/static';
 import { uploadFormImage } from '@/lib/storage/upload';
 import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 const getCachedBanners = unstable_cache(
     async () => {
-        const { data, error } = await supabaseStatic
+        if (!isSupabaseConfigured()) return [];
+
+        const { data, error } = await getSupabaseStatic()
             .from('banners')
             .select('id, title, description, image_url, color, link_url, button_text')
             .eq('is_active', true)

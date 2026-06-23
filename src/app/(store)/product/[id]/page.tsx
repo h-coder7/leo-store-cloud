@@ -1,6 +1,6 @@
 import type { Metadata, ResolvingMetadata } from 'next';
 import React from 'react';
-import { supabaseStatic } from '@/lib/supabase/static';
+import { getSupabaseStatic, isSupabaseConfigured } from '@/lib/supabase/static';
 import { unstable_cache } from 'next/cache';
 import { notFound } from 'next/navigation';
 import type { Product } from '@/lib/supabase/types';
@@ -14,7 +14,9 @@ interface Props {
 
 const getProduct = unstable_cache(
     async (id: string): Promise<Product | null> => {
-        const { data, error } = await supabaseStatic
+        if (!isSupabaseConfigured()) return null;
+
+        const { data, error } = await getSupabaseStatic()
             .from('products')
             .select('*')
             .eq('id', parseInt(id, 10))
