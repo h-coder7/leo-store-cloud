@@ -14,6 +14,14 @@ function imageRemotePatterns() {
       port: '',
       pathname: '/**',
     },
+    // R2 public URLs (*.r2.dev) — always allow so Cloudflare builds work
+    // even when R2_PUBLIC_URL is only set at runtime, not build time.
+    {
+      protocol: 'https',
+      hostname: '**.r2.dev',
+      port: '',
+      pathname: '/**',
+    },
   ];
 
   const r2PublicUrl = process.env.R2_PUBLIC_URL;
