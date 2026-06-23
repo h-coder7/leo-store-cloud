@@ -3,36 +3,13 @@
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { updateProduct } from '@/app/actions/products';
-import { ImageIcon, AlertCircle, Save, ArrowRight, Ruler, Tag, Plus, Trash2, X } from 'lucide-react';
-import type { ProductOffer, Section, Product } from '@/lib/supabase/types';
+import { ImageIcon, AlertCircle, Save, ArrowRight, Ruler } from 'lucide-react';
+import type { Section, Product } from '@/lib/supabase/types';
 import { toast } from 'sonner';
 import { compressImage, compressImages } from '@/lib/image/compress';
+import ColorSizesEditor from '@/components/admin/ColorSizesEditor';
 
 import { isRedirectError } from 'next/dist/client/components/redirect-error';
-
-const SIZES = [
-    '1 شهر', '3 شهور', '6 شهور', '9 شهور', '12 شهر', '18 شهر', '24 شهر',
-    'سنتين', '3 سنوات', '4 سنوات', '5 سنوات', '6 سنوات',
-    '7 سنوات', '8 سنوات', '9 سنوات', '10 سنوات', '12 سنة',
-    '14 سنة', '16 سنة', '18 سنة', '20 سنة'
-];
-const COLORS = [
-    { label: 'اسود', value: 'اسود', hex: '#000000' },
-    { label: 'ابيض', value: 'ابيض', hex: '#ffffff' },
-    { label: 'اوف وايت', value: 'اوف وايت', hex: '#fdf5e6' },
-    { label: 'بيج', value: 'بيج', hex: '#d4b896' },
-    { label: 'بني', value: 'بني', hex: '#4b2c20' },
-    { label: 'بينك', value: 'بينك', hex: '#ffc0cb' },
-    { label: 'اورنج', value: 'اورنج', hex: '#ff8c00' },
-    { label: 'احمر', value: 'احمر', hex: '#ff0000' },
-    { label: 'موف', value: 'موف', hex: '#9370db' },
-    { label: 'اخضر', value: 'اخضر', hex: '#008000' },
-    { label: 'لبني', value: 'لبني', hex: '#add8e6' },
-    { label: 'ازرق', value: 'ازرق', hex: '#0000ff' },
-    { label: 'برجندي', value: 'برجندي', hex: '#800020' },
-    { label: 'زيتي', value: 'زيتي', hex: '#556b2f' },
-    { label: 'رمادي', value: 'رمادي', hex: '#808080' },
-];
 
 export default function EditProductClient({ product, sections }: { product: Product, sections: Section[] }) {
     const [fileError, setFileError] = useState<string | null>(null);
@@ -41,10 +18,14 @@ export default function EditProductClient({ product, sections }: { product: Prod
     const [localSubmitting, setLocalSubmitting] = useState(false);
     const isSubmittingRef = useRef(false);
 
-    const [colorSizes, setColorSizes] = useState<Record<string, string[]>>(
-        (product.color_sizes as Record<string, string[]>) || {}
-    );
-    const [activeColorForSizes, setActiveColorForSizes] = useState<{ label: string; value: string } | null>(null);
+    const [colorSizes, setColorSizes] = useState<Record<string, string[]>>(() => {
+        const fromDb = (product.color_sizes as Record<string, string[]>) || {};
+        if (Object.keys(fromDb).length > 0) return fromDb;
+        if (product.colors?.length) {
+            return Object.fromEntries(product.colors.map((c) => [c, product.sizes || []]));
+        }
+        return {};
+    });
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
@@ -199,58 +180,7 @@ export default function EditProductClient({ product, sections }: { product: Prod
                         </div>
                     </div>
 
-                    {/* الألوان والمقاسات المرتبطة */}
-                    <div>
-                        <p className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1 mr-1">الألوان المتاحة</p>
-                        <p className="block text-xs text-slate-400 mb-4 mr-1">اضغط على اللون لتحديد المقاسات المتاحة له</p>
-                        <div className="flex flex-wrap gap-3">
-                            {COLORS.map(({ label, value, hex }) => {
-                                const selectedSizes = colorSizes[value] || [];
-                                const isSelected = selectedSizes.length > 0;
-                                return (
-                                    <div
-                                        key={value}
-                                        onClick={() => setActiveColorForSizes({ label, value })}
-                                        className={`cursor-pointer flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border-2 transition-all select-none min-w-[140px] relative
-                                            ${isSelected 
-                                                ? 'border-primary bg-primary/5 text-primary dark:border-primary' 
-                                                : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300'}`}
-                                    >
-                                        <div className="flex items-center gap-2.5">
-                                            <span
-                                                className="w-4 h-4 rounded-full border border-slate-300 dark:border-slate-600 shrink-0"
-                                                style={{ backgroundColor: hex }}
-                                            />
-                                            <div className="flex flex-col">
-                                                <span className="text-sm font-black">{label}</span>
-                                                {isSelected && (
-                                                    <span className="text-[10px] opacity-80 font-bold mt-0.5">
-                                                        {selectedSizes.length} مقاسات
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {isSelected && (
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    const newColorSizes = { ...colorSizes };
-                                                    delete newColorSizes[value];
-                                                    setColorSizes(newColorSizes);
-                                                }}
-                                                className="p-1 hover:bg-rose-50 text-rose-500 rounded-lg transition-colors shrink-0"
-                                                title="إلغاء هذا اللون"
-                                            >
-                                                <X className="w-4 h-4" />
-                                            </button>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
+                    <ColorSizesEditor colorSizes={colorSizes} onChange={setColorSizes} />
 
                     <div>
                         <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-4 mr-1">
@@ -367,82 +297,6 @@ export default function EditProductClient({ product, sections }: { product: Prod
                     </div>
                 </form>
             </div>
-
-            {activeColorForSizes && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
-                    onClick={() => setActiveColorForSizes(null)}
-                >
-                    <div
-                        className="bg-white dark:bg-slate-900 rounded-[2rem] w-full max-w-lg p-6 shadow-2xl relative border border-slate-100 dark:border-slate-800 animate-in zoom-in-95 duration-200"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
-                                <span>مقاسات اللون:</span>
-                                <span className="px-3 py-1 bg-primary/10 text-primary rounded-lg text-sm">{activeColorForSizes.label}</span>
-                            </h3>
-                            <button
-                                type="button"
-                                onClick={() => setActiveColorForSizes(null)}
-                                className="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
-                            >
-                                <X className="w-6 h-6" />
-                            </button>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-3 mb-6 max-h-[40vh] overflow-y-auto p-1">
-                            {SIZES.map((size) => {
-                                const isSelected = colorSizes[activeColorForSizes.value]?.includes(size);
-                                return (
-                                    <button
-                                        key={size}
-                                        type="button"
-                                        onClick={() => {
-                                            const currentSizes = colorSizes[activeColorForSizes.value] || [];
-                                            const newSizes = currentSizes.includes(size)
-                                                ? currentSizes.filter(s => s !== size)
-                                                : [...currentSizes, size];
-                                            setColorSizes(prev => ({
-                                                ...prev,
-                                                [activeColorForSizes.value]: newSizes
-                                            }));
-                                        }}
-                                        className={`py-2.5 px-3 rounded-xl border-2 text-xs font-bold transition-all select-none text-center
-                                            ${isSelected 
-                                                ? 'border-primary bg-primary/10 text-primary' 
-                                                : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300'}`}
-                                    >
-                                        {size}
-                                    </button>
-                                );
-                            })}
-                        </div>
-
-                        <div className="flex justify-end gap-3">
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    const newColorSizes = { ...colorSizes };
-                                    delete newColorSizes[activeColorForSizes.value];
-                                    setColorSizes(newColorSizes);
-                                    setActiveColorForSizes(null);
-                                }}
-                                className="px-4 py-2 rounded-xl text-xs font-bold text-rose-500 hover:bg-rose-50 transition-colors"
-                            >
-                                إزالة اللون
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setActiveColorForSizes(null)}
-                                className="px-5 py-2 rounded-xl bg-primary text-primary-foreground font-black text-xs transition-all hover:scale-105 active:scale-95 shadow"
-                            >
-                                تأكيد
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

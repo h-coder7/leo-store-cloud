@@ -6,6 +6,7 @@ import { uploadFormImage } from '@/lib/storage/upload';
 import { revalidatePath, unstable_cache, revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { Product, Section } from '@/lib/supabase/types';
+import { deriveProductVariants } from '@/lib/product/variants';
 
 const getCachedProducts = unstable_cache(
     async (sectionId?: number, limit: number = 20) => {
@@ -97,8 +98,7 @@ export async function addProduct(formData: FormData) {
     // Arrays: sizes & colors come as multiple checkbox values
     const colorSizesRaw = formData.get('color_sizes') as string;
     const color_sizes = colorSizesRaw ? JSON.parse(colorSizesRaw) : null;
-    const colors = color_sizes ? Object.keys(color_sizes) : [];
-    const sizes = color_sizes ? Array.from(new Set(Object.values(color_sizes).flat() as string[])) : [];
+    const { colors, sizes } = deriveProductVariants(color_sizes);
 
     // Images: Upload files to Cloudflare R2
     const imageFiles = formData.getAll('images') as File[];
@@ -298,8 +298,7 @@ export async function updateProduct(id: number, formData: FormData) {
 
     const colorSizesRaw = formData.get('color_sizes') as string;
     const color_sizes = colorSizesRaw ? JSON.parse(colorSizesRaw) : null;
-    const colors = color_sizes ? Object.keys(color_sizes) : [];
-    const sizes = color_sizes ? Array.from(new Set(Object.values(color_sizes).flat() as string[])) : [];
+    const { colors, sizes } = deriveProductVariants(color_sizes);
 
     // Images: current images + new uploads
     const existingImagesRaw = formData.get('existing_images') as string;

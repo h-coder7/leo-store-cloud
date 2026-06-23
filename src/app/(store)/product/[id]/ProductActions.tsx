@@ -9,6 +9,7 @@ import { addToCart } from "@/app/actions/cart";
 import { toast } from "sonner";
 import { useCartStore } from "@/lib/store/cart";
 import { formatWhatsAppNumber } from "@/lib/utils";
+import { isSizeAvailableForColor } from "@/lib/product/variants";
 
 interface ProductActionsProps {
     product: Product;
@@ -138,10 +139,12 @@ export default function ProductActions({
                                 key={c}
                                 onClick={() => {
                                     setSelectedColor(c);
-                                    // Reset size selection if it's not available for the new color
                                     const colorSizes = (product.color_sizes as Record<string, string[]>) || {};
-                                    const availableForNewColor = colorSizes[c] || [];
-                                    if (selectedSize && !availableForNewColor.includes(selectedSize)) {
+                                    const productSizes = product.sizes || [];
+                                    if (
+                                        selectedSize &&
+                                        !isSizeAvailableForColor(c, selectedSize, colorSizes, productSizes)
+                                    ) {
                                         setSelectedSize("");
                                     }
                                 }}
@@ -168,11 +171,11 @@ export default function ProductActions({
                     </div>
                     <div className="flex flex-wrap gap-4">
                         {product.sizes.map((s) => {
-                            // Check if size is available for the selected color
                             const colorSizes = (product.color_sizes as Record<string, string[]>) || {};
-                            const isAvailable = selectedColor 
-                                ? (colorSizes[selectedColor] || []).includes(s)
-                                : true; // If no color selected, show all as available
+                            const productSizes = product.sizes || [];
+                            const isAvailable = selectedColor
+                                ? isSizeAvailableForColor(selectedColor, s, colorSizes, productSizes)
+                                : true;
 
                             const isSelected = selectedSize === s;
 
