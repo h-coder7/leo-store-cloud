@@ -3,6 +3,8 @@ import TopNavbar from "@/components/store/TopNavbar";
 import Footer from "@/components/store/Footer";
 import { getSettings } from "@/app/actions/settings";
 
+export const dynamic = 'force-dynamic';
+
 export default async function StoreLayout({
     children,
 }: {

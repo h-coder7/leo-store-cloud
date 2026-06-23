@@ -7,7 +7,7 @@
     "build": "next build --webpack",
     "build:cloudflare": "opennextjs-cloudflare build",
     "preview:cloudflare": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy:cloudflare": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "deploy:cloudflare": "opennextjs-cloudflare build && opennextjs-cloudflare deploy -- --keep-vars",
     "start": "next start",
     "lint": "eslint",
     "migrate:images": "node --env-file=.env.local scripts/migrate-images-to-r2.js",

@@ -10,8 +10,6 @@ import { getTestimonials } from '@/app/actions/testimonials';
 import { getOffers } from '@/app/actions/offers';
 import { Palette, Folder, ShoppingBag } from 'lucide-react';
 
-export const revalidate = 60;
-
 export default async function StorePage() {
     const [products, sections, banners, testimonials, offers] = await Promise.all([
         getProducts(),
