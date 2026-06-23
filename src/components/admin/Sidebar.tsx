@@ -29,7 +29,7 @@ export default function AdminSidebar() {
             {/* Mobile Header */}
             <div className="lg:hidden fixed top-0 w-full bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 z-50 flex items-center justify-between p-4 shadow-sm h-16">
                 <div className="flex items-center gap-2">
-                    <Image src="/logo.png" alt="Leo Store" width={40} height={40} className="rounded-lg" style={{ width: 'auto', height: 'auto' }} />
+                    <Image src="/logo.png" alt="Leo Store" width={80} height={80} className="rounded-lg" style={{ color: 'transparent', width: 'auto', height: '80px', padding: '10px 0' }} />
                     <span className="font-bold text-lg">التحكم</span>
                 </div>
                 <button onClick={() => setIsMobileOpen(!isMobileOpen)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
@@ -52,7 +52,7 @@ export default function AdminSidebar() {
             )}>
                 {/* Logo Area */}
                 <div className="h-20 flex items-center justify-center border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-                    <Image src="/logo.png" alt="Leo Store" width={80} height={80} className="object-contain" style={{ width: 'auto', height: 'auto' }} />
+                    <Image src="/logo.png" alt="Leo Store" width={80} height={80} style={{ color: 'transparent', width: 'auto', height: '80px', padding: '10px 0' }} />
                 </div>
 
                 {/* Navigation Links */}

@@ -37,7 +37,7 @@ export default function Navbar() {
                     {/* Logo Section (Right side for RTL) */}
                     <div className="flex-shrink-0 flex items-center">
                         <Link href="/" className="flex items-center gap-2">
-                            <Image src="/logo.png" alt="Leo Store" width={100} height={100} priority style={{ width: 'auto', height: 'auto' }} />
+                            <Image src="/logo.png" alt="Leo Store" width={100} height={80} priority style={{ color: 'transparent', width: 'auto', height: '80px', padding: '10px 0' }} />
                         </Link>
                     </div>
 
