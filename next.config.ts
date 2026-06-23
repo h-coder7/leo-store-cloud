@@ -1,0 +1,66 @@
+import type { NextConfig } from "next";
+
+function imageRemotePatterns() {
+  const patterns: NonNullable<NextConfig['images']>['remotePatterns'] = [
+    {
+      protocol: 'https',
+      hostname: 'psyktnuzjukkcgnvniwz.supabase.co',
+      port: '',
+      pathname: '/**',
+    },
+    {
+      protocol: 'https',
+      hostname: 'images.unsplash.com',
+      port: '',
+      pathname: '/**',
+    },
+  ];
+
+  const r2PublicUrl = process.env.R2_PUBLIC_URL;
+  if (r2PublicUrl) {
+    try {
+      const { hostname, protocol } = new URL(r2PublicUrl);
+      if (hostname) {
+        patterns.push({
+          protocol: (protocol.replace(':', '') || 'https') as 'https' | 'http',
+          hostname,
+          port: '',
+          pathname: '/**',
+        });
+      }
+    } catch {
+      // ignore invalid R2_PUBLIC_URL at build time
+    }
+  }
+
+  return patterns;
+}
+
+const nextConfig: NextConfig = {
+  experimental: {
+    serverActions: {
+      // Images are compressed to WebP in the browser before upload, so each is
+      // small; this headroom covers products with several images at once.
+      bodySizeLimit: '8mb',
+    },
+  },
+  images: {
+    // Serve modern, smaller WebP. A single format keeps the optimizer cache
+    // small (vs. caching both AVIF + WebP variants).
+    formats: ['image/webp'],
+    // Keep optimized images cached for 31 days so the original is fetched from
+    // storage only once per variant. Uploads use unique filenames, so a long TTL
+    // is safe (the src changes whenever the image changes).
+    minimumCacheTTL: 2678400,
+    // Trim the breakpoints to the ones we actually use → fewer generated
+    // variants, so fewer downloads of the original from storage.
+    deviceSizes: [640, 750, 828, 1080, 1920],
+    imageSizes: [48, 64, 96, 128, 256, 384],
+    // Allowed quality values (required in Next 16). Lower quality = less data.
+    qualities: [50, 65, 75],
+    remotePatterns: imageRemotePatterns(),
+  },
+};
+
+export default nextConfig;
+
