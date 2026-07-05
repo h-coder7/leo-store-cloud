@@ -9,7 +9,7 @@ import type { Product, Section } from '@/lib/supabase/types';
 import { deriveProductVariants } from '@/lib/product/variants';
 
 const getCachedProducts = unstable_cache(
-    async (sectionId?: number, limit: number = 20) => {
+    async (sectionId?: number, limit: number = 100) => {
         if (!isSupabaseConfigured()) return [];
 
         let query = getSupabaseStatic()
@@ -38,7 +38,7 @@ const getCachedProducts = unstable_cache(
 
 // `limit` defaults to 20 (used on the homepage for "latest products"). The
 // full catalog / section pages pass a higher limit to show all products.
-export async function getProducts(sectionId?: number, limit: number = 20): Promise<Product[]> {
+export async function getProducts(sectionId?: number, limit: number = 100): Promise<Product[]> {
     return getCachedProducts(sectionId, limit);
 }
 
