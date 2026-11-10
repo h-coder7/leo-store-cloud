@@ -3,6 +3,7 @@ import TopNavbar from "@/components/store/TopNavbar";
 import Footer from "@/components/store/Footer";
 import CartSync from "@/components/store/CartSync";
 import JsonLd from "@/components/seo/JsonLd";
+import MetaPixel from "@/components/store/MetaPixel";
 import { getSettings } from "@/app/actions/settings";
 import { SITE_NAME, SITE_NAME_AR, absoluteUrl } from "@/lib/site";
 
@@ -15,6 +16,8 @@ export default async function StoreLayout({
     children: React.ReactNode;
 }) {
     const settings = await getSettings();
+    const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
+    const hasPixel = Boolean(pixelId && /^\d+$/.test(pixelId));
 
     const organizationJsonLd = {
         '@context': 'https://schema.org',
@@ -27,6 +30,7 @@ export default async function StoreLayout({
 
     return (
         <div className="flex flex-col min-h-screen">
+            {hasPixel && pixelId ? <MetaPixel pixelId={pixelId} /> : null}
             <JsonLd data={organizationJsonLd} />
             <CartSync />
             <TopNavbar settings={settings} />

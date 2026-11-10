@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Sun, Snowflake, Sparkles } from 'lucide-react';
 import ProductGallery from './ProductGallery';
 import ProductActions from './ProductActions';
 import OffersSlider from '@/components/store/OffersSlider';
 import type { Product, Offer } from '@/lib/supabase/types';
+import { trackMeta } from '@/lib/meta/pixel';
 
 interface Props {
     product: Product;
@@ -24,6 +25,16 @@ export default function ProductClientLayout({ product, whatsappNumber, offers }:
     const badge = product.season ? seasonBadge[product.season] : null;
     const [selectedSize, setSelectedSize] = useState<string>(product.sizes?.[0] || "");
     const [selectedColor, setSelectedColor] = useState<string>(product.colors?.[0] || "");
+
+    useEffect(() => {
+        trackMeta('ViewContent', {
+            content_ids: [String(product.id)],
+            content_type: 'product',
+            content_name: product.name,
+            value: product.price,
+            currency: 'EGP',
+        });
+    }, [product.id, product.name, product.price]);
 
     return (
         <>

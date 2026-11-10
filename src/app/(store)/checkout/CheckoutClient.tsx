@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/lib/store/cart';
 import { useLeadCapture } from '@/hooks/useLeadCapture';
+import { trackMeta } from '@/lib/meta/pixel';
 
 export type OfferInfo = {
     title?: string;
@@ -80,7 +81,21 @@ export default function CheckoutClient({ initialItems, settings }: { initialItem
 
     useEffect(() => {
         setIsMounted(true);
-    }, []);
+        const contentIds = initialItems.map((item) => String(item.product.id));
+        const numItems = initialItems.reduce((acc, item) => acc + (Number(item.quantity) || 1), 0);
+        const value = initialItems.reduce((acc, item) => {
+            const price = Number(item.product?.price) || 0;
+            const quantity = Number(item.quantity) || 1;
+            return acc + price * quantity;
+        }, 0);
+        trackMeta('InitiateCheckout', {
+            content_ids: contentIds,
+            content_type: 'product',
+            num_items: numItems,
+            value,
+            currency: 'EGP',
+        });
+    }, [initialItems]);
 
     const subtotal = initialItems.reduce((acc, item) => {
         const price = Number(item.product?.price) || 0;
@@ -173,6 +188,14 @@ export default function CheckoutClient({ initialItems, settings }: { initialItem
             const result = await createOrder(orderData);
 
             if (result.success) {
+                const numItems = initialItems.reduce((acc, item) => acc + (Number(item.quantity) || 1), 0);
+                trackMeta('Purchase', {
+                    content_ids: initialItems.map((item) => String(item.product.id)),
+                    content_type: 'product',
+                    num_items: numItems,
+                    value: total,
+                    currency: 'EGP',
+                });
                 await markAsCompleted();
                 clearCart();
                 setIsSuccess(true);

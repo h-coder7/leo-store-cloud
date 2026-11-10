@@ -10,6 +10,7 @@ import { refreshCartFromServer } from "@/lib/cart/refresh";
 import { toast } from "sonner";
 import { formatWhatsAppNumber } from "@/lib/utils";
 import { isSizeAvailableForColor } from "@/lib/product/variants";
+import { trackMeta } from "@/lib/meta/pixel";
 
 interface ProductActionsProps {
     product: Product;
@@ -33,6 +34,16 @@ export default function ProductActions({
     const [isBuyNowPending, setIsBuyNowPending] = useState(false);
     const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
 
+    const trackAddToCart = () => {
+        trackMeta('AddToCart', {
+            content_ids: [String(product.id)],
+            content_type: 'product',
+            content_name: product.name,
+            value: product.price,
+            currency: 'EGP',
+        });
+    };
+
     const handleAddToCart = async () => {
         if (product.sizes?.length && !selectedSize) {
             toast.error("يرجى اختيار المقاس");
@@ -48,6 +59,7 @@ export default function ProductActions({
             setIsPending(true);
             await addToCart(product.id, 1, selectedSize, selectedColor);
             await refreshCartFromServer();
+            trackAddToCart();
             toast.success("تم إضافة المنتج للسلة بنجاح!");
         } catch (error) {
             console.error(error);
@@ -72,6 +84,7 @@ export default function ProductActions({
             setIsBuyNowPending(true);
             await addToCart(product.id, 1, selectedSize, selectedColor);
             await refreshCartFromServer();
+            trackAddToCart();
             router.push("/checkout");
         } catch (error) {
             console.error(error);
