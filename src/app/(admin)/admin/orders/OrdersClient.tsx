@@ -33,6 +33,7 @@ type Order = {
     customer_name: string;
     phone: string;
     address: string;
+    governorate?: string;
     total: number;
     status: string;
     items: OrderItemRow[];
@@ -293,9 +294,21 @@ export default function OrdersClient({ initialOrders }: { initialOrders: Order[]
                                             <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center"><Phone className="w-5 h-5" /></div>
                                             <span className="font-bold text-slate-700 dark:text-slate-300">{selectedOrder.phone}</span>
                                         </div>
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center"><MapPin className="w-5 h-5" /></div>
-                                            <span className="font-bold text-slate-700 dark:text-slate-300 leading-relaxed">{selectedOrder.address}</span>
+                                        {selectedOrder.governorate && (
+                                            <div className="flex items-start gap-3">
+                                                <div className="w-10 h-10 shrink-0 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center"><MapPin className="w-5 h-5" /></div>
+                                                <div className="min-w-0">
+                                                    <p className="text-xs font-bold text-slate-400 mb-0.5">المحافظة / المنطقة</p>
+                                                    <span className="font-bold text-slate-700 dark:text-slate-300 leading-relaxed">{selectedOrder.governorate}</span>
+                                                </div>
+                                            </div>
+                                        )}
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-10 h-10 shrink-0 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center"><MapPin className="w-5 h-5" /></div>
+                                            <div className="min-w-0">
+                                                <p className="text-xs font-bold text-slate-400 mb-0.5">العنوان</p>
+                                                <span className="font-bold text-slate-700 dark:text-slate-300 leading-relaxed">{selectedOrder.address}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
